@@ -64,4 +64,33 @@ function make_quality_function(p::SingleDUParameters)
 end
 
 
+"""
+    function write_prefit_summary(fname::AbstractString, detx_fname::AbstractString)
+
+Perform the prefit on a given file and create a CSV summary file.
+"""
+function write_prefit_summary(fname::AbstractString, detx_fname::AbstractString)
+    run_id = mc_run_id(fname)
+    calib = read_calibration(detx_fname)
+    reader = KM3NeT.EventReader(fname, load_tracks=true)
+    output_fname = basename(fname) * ".royprefit.csv"
+    out_fobj = open(output_fname, "w")
+    write(out_fobj, "run_id,event_id,n_muons,muon_energy,dir_x,dir_y,dir_z,alpha\n")
+    for (event_id, event) in enumerate(reader)
+        n_muons = length([t for t in event.mc_tracks if t.particle_type == 5])
+        muon_energy = sum([t.E for t in event.mc_tracks if t.particle_type == 5])
+        write(out_fobj, "$run_id,$event_id,$n_muons,$muon_energy,")
+        reco = ROyFit.prefit(event.hits, calib)
+        if isa(reco, NoRecoTrack)
+            write(out_fobj, "nan,nan,nan,nan\n")
+            continue
+        end
+        muon = event.mc_tracks[2]
+        alpha = angle(Direction(reco.dir), muon.dir)
+        write(out_fobj, "$(reco.dir.x),$(reco.dir.y),t$(reco.dir.z),$alpha\n")
+    end
+    close(out_fobj)
+end
+
+
 end # module
