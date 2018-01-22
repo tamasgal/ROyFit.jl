@@ -39,12 +39,13 @@ end
 
 
 function γ_d(p::SingleDUParameters, uz, zc, dc)
-    return n/sqrt(n^2-1) * sqrt(dc^2 + ((p.z-zc)^2) * (1-uz^2)
+    return n/sqrt(n^2-1) * sqrt(dc^2 + ((p.z-zc)^2) * (1-uz^2))
 end
 
 
 function γ_t(p::SingleDUParameters, uz, zc, dc, tc)
     return tc + ((p.z-zc)*uz+(n^2 - 1) * γ_d(p, uz, zc, dc) / n ) / c
+end
 
 
 function cosθ(p::SingleDUParameters, uz, zc, dc)
@@ -61,6 +62,6 @@ function make_quality_function(p::SingleDUParameters)
     end
     return quality_function
 end
-    
+
 
 end # module
